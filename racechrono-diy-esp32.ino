@@ -19,7 +19,7 @@
 #include <EasyLogger.h>
 #include <RaceChrono.h>
 
-bool isTwaiDriverStarted = false;
+// bool isTwaiDriverStarted = false;
 bool isBLEStarted = false;
 twai_message_t message;
 RingbufHandle_t bufferHandle;
@@ -89,7 +89,7 @@ bool startTwaiDriver()
 
     if (twai_start() == ESP_OK)
     {
-        isTwaiDriverStarted = true;
+        // isTwaiDriverStarted = true;
         LOG_NOTICE("twai", "Driver started.");
         return true;
     }
@@ -112,7 +112,7 @@ bool stopTwaiDriver()
         if (twai_driver_uninstall() == ESP_OK)
         {
             LOG_NOTICE("twai", "Driver uninstalled.");
-            isTwaiDriverStarted = false;
+            // isTwaiDriverStarted = false;
             return true;
         }
         else
@@ -278,11 +278,15 @@ void setup()
         LOG_ERROR("setup", "Failed to create ring buffer.");
     }
 
+    // When main core is 1, assume dual-core mcu (S3) is used and map the TWAI task to it
+    // Otherwise, assume single-core mcu (C3) and map all tasks to core 0
+    uint mainCore = xPortGetCoreID();
+
     delay(1250); // Delay used to avoid multiple serial messages overlapping
     xTaskCreatePinnedToCore(taskManageBLEConnection, "taskManageBLEConnection", 4096, NULL, 1, NULL, 0);
 
     delay(1250); // Delay used to avoid multiple serial messages overlapping
-    xTaskCreatePinnedToCore(taskGetTwaiMessages, "taskGetTwaiMessages", 4096, NULL, 5, NULL, 1);
+    xTaskCreatePinnedToCore(taskGetTwaiMessages, "taskGetTwaiMessages", 4096, NULL, 5, NULL, mainCore);
 
     delay(1250); // Delay used to avoid multiple serial messages overlapping
     xTaskCreatePinnedToCore(taskSendBLEMessages, "taskSendBLEMessages", 4096, NULL, 5, NULL, 0);

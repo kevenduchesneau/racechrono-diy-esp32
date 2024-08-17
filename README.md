@@ -1,4 +1,4 @@
-# RaceChrono DIY ESP32S3
+# RaceChrono DIY ESP32
 
 ### A Bluetooth DIY CAN-BUS reader based on the ESP32 S3 variant
 
@@ -6,7 +6,7 @@
 
 ![Final assembly](img/PXL_20240811_193427135_small.jpg)
 
-Yet another one! After using a DIY datalogger [based on the nRF52840 microcontroller](https://github.com/timurrrr/RaceChronoDiyBleDevice), I was inspired by the improved performance discussed on [this forum thread](https://racechrono.com/forum/discussion/2265/esp32-esp32s3-diy-build-progress) to try and build another one based on the ESP32S3.
+Yet another one! After using a DIY datalogger [based on the nRF52840 microcontroller](https://github.com/timurrrr/RaceChronoDiyBleDevice), I was inspired by the improved performance discussed on [this forum thread](https://racechrono.com/forum/discussion/2265/esp32-esp32s3-diy-build-progress) to try and build another one based on the ESP32 S3.
 
 Unfortunately, I was never able to get the [linked Github project](https://github.com/joeroback/racechrono-canbus) by Joe Roback / dirtyfreebooter to work properly. I instead decided to try and write my own implementation as a learning opportunity, and here we are.
 
@@ -19,7 +19,10 @@ This project is licensed under the terms of the MIT license.
 
 ## Features
 
-* Leverages FreeRTOS tasks to distribute CAN and Bluetooth workloads across both cores available.
+* (New) Supports both ESP32 S3 and C3 variants.
+    * Measured performance is similar across both variants, pointing to BLE transmission speed as the real bottleneck.
+* Leverages FreeRTOS tasks to distribute CAN and Bluetooth workloads across available cores.
+    * Handles both single-core (C3) and dual-core (S3) user-cases.
     * Easily reaches a reported 120Hz, or three times faster than with the nRF52840 (measured on a Google Pixel 7).
     * Actual performance seems to be closer to 200Hz when adding the individual PIDs reported rates.
 * Supports per-PID rate-limiting.
