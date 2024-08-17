@@ -29,7 +29,7 @@
 // #define CONFIG_BT_NIMBLE_EXT_ADV 1
 
 // Limit the rate of messages sent to RaceChrono to one every x CAN messages
-// Can be further refined per PID through the filter.cpp file
+// Can be further refined per PID through the list below
 #define DEFAULT_UPDATE_RATE_LIMITER 10
 
 // An optional list of PIDs and their associated rate limit.
