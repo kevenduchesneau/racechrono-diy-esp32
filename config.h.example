@@ -2,7 +2,9 @@
 #define CONFIG_H
 
 // Bluetooth device name
-#define DEVICE_NAME "RaceChrono DIY"
+// If not defined, will default to "RaceChrono aa:bb:cc"
+// aa:bb:cc being the last three octets of the MAC address
+// #define DEVICE_NAME "RaceChrono DIY"
 
 // Serial logging level, select one from the following list :
 // LOG_LEVEL_EMERGENCY

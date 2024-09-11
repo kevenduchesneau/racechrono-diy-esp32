@@ -19,7 +19,7 @@ This project is licensed under the terms of the MIT license.
 
 ## Features
 
-* (New) Supports both ESP32 S3 and C3 variants.
+* Supports both ESP32 S3 and C3 variants.
     * Measured performance is similar across both variants, pointing to BLE transmission speed as the real bottleneck.
 * Leverages FreeRTOS tasks to distribute CAN and Bluetooth workloads across available cores.
     * Handles both single-core (C3) and dual-core (S3) user-cases.
@@ -67,9 +67,11 @@ Here is the configuration I used :
 
 ## Configuration options
 
-The **config.h** contains all user-configurable parameters, and should be self-explanatory.
+The **config.h** contains all user-configurable parameters.
 
-Nonetheless, here's a quick summary of the parameters available :
+A **config.h.example** file is provided, and should be self-explanatory. You must copy or rename that file to **config.h** before compiling the Arduino project.
+
+Here's a quick summary of the parameters available :
 
 * **DEVICE_NAME** : The device name broadcasted via Bluetooth
 * **LOG_LEVEL** : The amount of information printed on the serial port

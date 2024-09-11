@@ -9,6 +9,8 @@
 // https://github.com/timurrrr
 //
 
+// Copy the "config.h.example" file provided to "config.h"
+// and edit as needed, following the instructions provided in README.md
 #include "config.h"
 
 #include <driver/twai.h>
@@ -16,6 +18,7 @@
 #include <freertos/queue.h>
 #include <freertos/ringbuf.h>
 #include <freertos/semphr.h>
+#include <esp_mac.h>
 #include <EasyLogger.h>
 #include <RaceChrono.h>
 
@@ -128,13 +131,40 @@ bool stopTwaiDriver()
     return false;
 }
 
+// Returns the Bluetooth device name to advertise
+// If unspecified in the config file, returns a generic name based on the MAC address
+char *getDeviceName()
+{
+#ifdef DEVICE_NAME
+    LOG_INFO("getDeviceName", "Device name is " << DEVICE_NAME);
+    return DEVICE_NAME;
+#endif
+
+    // Get Bluetooth MAC address
+    // https://github.com/espressif/esp-idf/blob/master/examples/system/base_mac_address/main/base_mac_address_example_main.c
+    uint8_t baseMac[6];
+    static char deviceName[32];
+
+    if (esp_read_mac(baseMac, ESP_MAC_BT) == ESP_OK)
+    {
+        sprintf(deviceName, "RaceChrono %x:%x:%x", baseMac[3], baseMac[4], baseMac[5]);
+    }
+    else
+    {
+        LOG_ERROR("getDeviceName", "Failed to get BT MAC address.");
+        sprintf(deviceName, "RaceChrono aa:bb:cc");
+    }
+
+    LOG_INFO("getDeviceName", "Device name is " << deviceName);
+    return deviceName;
+}
+
 // Called from taskManageBLEConnection() task on core 0
 bool startBLEConnection()
 {
     LOG_NOTICE("task_ble_manage", "Starting BLE.");
 
-    // RaceChronoBle.setUp(name, &raceChronoHandler);
-    RaceChronoBle.setUp(DEVICE_NAME, &raceChronoHandler);
+    RaceChronoBle.setUp(getDeviceName(), &raceChronoHandler);
     RaceChronoBle.startAdvertising();
     isBLEStarted = true;
 
