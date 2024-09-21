@@ -61,7 +61,7 @@ Here is the configuration I used :
 * Arduino Runs On: **Core 1**
 * Partition scheme: **Default**
 * Upload Mode: **USB-OTG CDC (TinyUSB)**
-* USB Mode: **USB-OTG (TinyUSB)**
+* USB Mode: **Hardware CDC and JTAG**
 * Upload speed: **115200**
 
 
@@ -79,33 +79,33 @@ Here's a quick summary of the parameters available :
 * **RX_PIN** and **TX_PIN** : The GPIO pins connected to the CAN transceiver
 * **CONFIG_BT_NIMBLE_EXT_ADV** : If set to 1, enables BLE 5.0 features
     * In my limited testing, this made no noticeable difference on performance.
-* **DEFAULT_UPDATE_RATE_LIMITER** : Specifies a global rate limiter, tracked individually for each PIDs, which limits the amount of updates to 1/n updates, unless defined in the optional PID list below. For example, a value of **10** means that one out of every 10 CAN messages will be send per PIDs.
+* **DEFAULT_UPDATE_RATE_HZ** : Specifies a global rate limiter, tracked individually for each PIDs, which limits the amount of updates to n updates per second, or n Hz, unless defined in the optional PID list below. For example, a value of **10** means that one CAN message per PID will be sent each 100ms, or each 1/10 of a second.
 
 ### Optional per-PID rate limiter
 There is also an optional list that allows you to specify a rate-limiting value for each individual PIDs, which allows you to prioritise certain PIDs over others.
 
-For example, for my 2009 Mazda RX-8, I configured the list as follows, which removes the default rate limiter for the PIDs I consider high-priority, and leaves all other PIDs at a rate of 1/10.
+For example, for my 2009 Mazda RX-8, I configured the list as follows, which overrides the default rate limiter for the PIDs I consider high-priority to a higher value, and leaves all other PIDs at the default rate, which is set at 1Hz in my case.
 
 ```C
-uint8_t getUpdateRateLimiter(uint32_t can_id)
+uint8_t getUpdateRateHz(uint32_t can_id)
 {
     switch (can_id)
     {
 
-    case 0x81:    // Steering angle, updates 100 times per second
-        return 1; // Do not limit this PID
+    case 0x81:     // Steering angle, updates 100 times per second
+        return 25; // 25Hz
 
-    case 0x85:    // Brake pressure, brake switch, updates 100 times per second
-        return 1; // Do not limit this PID
+    case 0x85:     // Brake pressure, brake switch, updates 100 times per second
+        return 25; // 25Hz
 
-    case 0x201:   // Speed, RPM, accelerator position, updates ~60 times per second
-        return 1; // Do not limit this PID
+    case 0x201:    // Speed, RPM, accelerator position, updates ~60 times per second
+        return 25; // 25Hz
 
-    case 0x4B0:   // Individual wheel speed, updates 50 times per second
-        return 1; // 2Do not limit this PID
+    case 0x4B0:    // Individual wheel speed, updates 50 times per second
+        return 25; // 25Hz
 
     default:
-        return DEFAULT_UPDATE_RATE_LIMITER;
+        return DEFAULT_UPDATE_RATE_HZ;
     }
 }
 ```

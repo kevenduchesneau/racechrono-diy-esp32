@@ -29,8 +29,8 @@ RingbufHandle_t bufferHandle;
 
 using PidExtra = struct
 {
-    uint8_t updateRateLimiter = DEFAULT_UPDATE_RATE_LIMITER;
-    uint8_t messageCount = 0;
+    uint32_t updateIntervalHz = 1000000 / DEFAULT_UPDATE_RATE_HZ;
+    uint32_t lastMessageTime = 0;
 };
 RaceChronoPidMap<PidExtra> pidMap;
 
@@ -58,9 +58,9 @@ public:
         {
             void *entry = pidMap.getEntryId(pid);
             PidExtra *pidExtra = pidMap.getExtra(entry);
-            pidExtra->messageCount = 0;
-            pidExtra->updateRateLimiter = getUpdateRateLimiter(pid);
-            LOG_INFO("racechrono", "PID " << pid << " update rate limiter: " << pidExtra->updateRateLimiter << ".");
+            pidExtra->lastMessageTime = esp_timer_get_time();
+            pidExtra->updateIntervalHz = 1000000 / getUpdateRateHz(pid);
+            LOG_INFO("racechrono", "PID " << pid << " update interval (Hz): " << getUpdateRateHz(pid) << ".");
         }
         else
         {
@@ -223,15 +223,14 @@ void taskGetTwaiMessages(void *)
                     if (entry != NULL)
                     {
                         PidExtra *extra = pidMap.getExtra(entry);
-                        extra->messageCount++;
-                        if (extra->messageCount == extra->updateRateLimiter)
+                        if ((esp_timer_get_time() - extra->lastMessageTime) >= extra->updateIntervalHz)
                         {
                             msgCountBufferTx++;
                             if (!(xRingbufferSend(bufferHandle, &message, sizeof(message), 0)))
                             {
                                 LOG_WARNING("task_twai", "Receive ring buffer overflow, dropping one message.");
                             }
-                            extra->messageCount = 0;
+                            extra->lastMessageTime += extra->updateIntervalHz;
                         }
                     }
                 }
